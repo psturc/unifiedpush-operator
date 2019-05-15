@@ -322,6 +322,30 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 		return reconcile.Result{}, nil
 	} else if err != nil {
 		return reconcile.Result{}, err
+	} else {
+		deploymentContainerSpecs := foundUnifiedpushDeployment.Spec.Template.Spec.Containers
+		var found = false
+		for _, spec := range deploymentContainerSpecs {
+			if spec.Name == "ups" {
+				found = true
+				desiredImage := unifiedpush.image()
+				if spec.Image != desiredImage {
+					reqLogger.Info("'ups' container in Unified Push Server deployment is using a different image", "ExistingImage", spec.Image, "DesiredImage", desiredImage)
+					// update and enqueue
+					spec.Image = desiredImage
+					err = r.client.Update(context.TODO(), foundUnifiedpushDeployment)
+					if err != nil {
+						reqLogger.Error(err, "Failed to update Deployment", "Deployment.Namespace", foundUnifiedpushDeployment.Namespace, "Deployment.Name", foundUnifiedpushDeployment.Name)
+						return reconcile.Result{}, err
+					}
+					return reconcile.Result{Requeue: true}, nil
+				}
+				break
+			}
+		}
+		if !found {
+			reqLogger.Info("Skipping image reconcile: Unable to find `ups` container spec in Unified Push Server deployment")
+		}
 	}
 
 	if foundUnifiedpushDeployment.Status.ReadyReplicas > 0 && instance.Status.Phase != aerogearv1alpha1.PhaseComplete {
