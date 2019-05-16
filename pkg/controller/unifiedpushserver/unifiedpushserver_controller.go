@@ -190,14 +190,14 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 	} else {
 		desiredImage := postgresql.image()
 
-		containerSpec := findContainerSpec(foundPostgresqlDeployment, "postgresql")
+		containerSpec := findContainerSpec(foundPostgresqlDeployment, POSTGRES_CONTAINER_NAME)
 		if containerSpec == nil {
-			reqLogger.Info("Skipping image reconcile: Unable to find `postgresql` container spec in Unified Push Server deployment")
+			reqLogger.Info("Skipping image reconcile: Unable to find container spec in deployment", "Deployment.Namespace", foundPostgresqlDeployment.Namespace, "Deployment.Name", foundPostgresqlDeployment.Name, "ContainerSpec", POSTGRES_CONTAINER_NAME)
 		} else if containerSpec.Image != desiredImage {
-			reqLogger.Info("'postgresql' container in Unified Push Server deployment is using a different image", "ExistingImage", containerSpec.Image, "DesiredImage", desiredImage)
+			reqLogger.Info("Container spec in deployment is using a different image. Going to update it now.", "Deployment.Namespace", foundPostgresqlDeployment.Namespace, "Deployment.Name", foundPostgresqlDeployment.Name, "ContainerSpec", POSTGRES_CONTAINER_NAME, "ExistingImage", containerSpec.Image, "DesiredImage", desiredImage)
 
 			// update
-			updateContainerSpecImage(foundPostgresqlDeployment, "postgresql", desiredImage)
+			updateContainerSpecImage(foundPostgresqlDeployment, POSTGRES_CONTAINER_NAME, desiredImage)
 
 			// enqueue
 			err = r.client.Update(context.TODO(), foundPostgresqlDeployment)
@@ -346,14 +346,14 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 		desiredUnifiedPushImage := unifiedpush.image()
 		desiredProxyImage := proxy.image()
 
-		unifiedPushContainerSpec := findContainerSpec(foundUnifiedpushDeployment, "ups")
+		unifiedPushContainerSpec := findContainerSpec(foundUnifiedpushDeployment, UPS_CONTAINER_NAME)
 		if unifiedPushContainerSpec == nil {
-			reqLogger.Info("Skipping image reconcile: Unable to find `ups` container spec in Unified Push Server deployment")
+			reqLogger.Info("Skipping image reconcile: Unable to find container spec in deployment", "Deployment.Namespace", foundUnifiedpushDeployment.Namespace, "Deployment.Name", foundUnifiedpushDeployment.Name, "ContainerSpec", UPS_CONTAINER_NAME)
 		} else if unifiedPushContainerSpec.Image != desiredUnifiedPushImage {
-			reqLogger.Info("'ups' container in Unified Push Server deployment is using a different image", "ExistingImage", unifiedPushContainerSpec.Image, "DesiredImage", desiredUnifiedPushImage)
+			reqLogger.Info("Container spec in deployment is using a different image. Going to update it now.", "Deployment.Namespace", foundUnifiedpushDeployment.Namespace, "Deployment.Name", foundUnifiedpushDeployment.Name, "ContainerSpec", UPS_CONTAINER_NAME, "ExistingImage", unifiedPushContainerSpec.Image, "DesiredImage", desiredUnifiedPushImage)
 
 			// update
-			updateContainerSpecImage(foundUnifiedpushDeployment, "ups", desiredUnifiedPushImage)
+			updateContainerSpecImage(foundUnifiedpushDeployment, UPS_CONTAINER_NAME, desiredUnifiedPushImage)
 
 			// enqueue
 			err = r.client.Update(context.TODO(), foundUnifiedpushDeployment)
@@ -364,14 +364,14 @@ func (r *ReconcileUnifiedPushServer) Reconcile(request reconcile.Request) (recon
 			return reconcile.Result{Requeue: true}, nil
 		}
 
-		proxyContainerSpec := findContainerSpec(foundUnifiedpushDeployment, "ups-oauth-proxy")
+		proxyContainerSpec := findContainerSpec(foundUnifiedpushDeployment, OAUTH_PROXY_CONTAINER_NAME)
 		if proxyContainerSpec == nil {
-			reqLogger.Info("Skipping image reconcile: Unable to find `ups-oauth-proxy` container spec in Unified Push Server deployment")
+			reqLogger.Info("Skipping image reconcile: Unable to find container spec in deployment", "Deployment.Namespace", foundUnifiedpushDeployment.Namespace, "Deployment.Name", foundUnifiedpushDeployment.Name, "ContainerSpec", OAUTH_PROXY_CONTAINER_NAME)
 		} else if proxyContainerSpec.Image != desiredProxyImage {
-			reqLogger.Info("'ups-oauth-proxy' container in Unified Push Server deployment is using a different image", "ExistingImage", proxyContainerSpec.Image, "DesiredImage", desiredProxyImage)
+			reqLogger.Info("Container spec in deployment is using a different image. Going to update it now.", "Deployment.Namespace", foundUnifiedpushDeployment.Namespace, "Deployment.Name", foundUnifiedpushDeployment.Name, "ContainerSpec", OAUTH_PROXY_CONTAINER_NAME, "ExistingImage", proxyContainerSpec.Image, "DesiredImage", desiredProxyImage)
 
 			// update
-			updateContainerSpecImage(foundUnifiedpushDeployment, "ups-oauth-proxy", desiredProxyImage)
+			updateContainerSpecImage(foundUnifiedpushDeployment, OAUTH_PROXY_CONTAINER_NAME, desiredProxyImage)
 
 			// enqueue
 			err = r.client.Update(context.TODO(), foundUnifiedpushDeployment)
